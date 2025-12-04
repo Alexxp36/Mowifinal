@@ -1,15 +1,20 @@
 package com.miempresa.mowimarket.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.miempresa.mowimarket.ui.screens.auth.AuthViewModelFactory
 import com.miempresa.mowimarket.ui.screens.auth.LoginScreen
 import com.miempresa.mowimarket.ui.screens.auth.RegisterScreen
 import com.miempresa.mowimarket.ui.screens.user.*
 import com.miempresa.mowimarket.ui.screens.admin.*
+import com.miempresa.mowimarket.ui.viewmodel.AuthViewModel
 
 /**
  * Grafo de navegación principal
@@ -20,10 +25,34 @@ fun NavGraph(
     startDestination: String,
     onLogout: () -> Unit
 ) {
+    val authViewModel: AuthViewModel = viewModel(
+        factory = AuthViewModelFactory(androidx.compose.ui.platform.LocalContext.current)
+    )
+
+    val isAuthenticated by authViewModel.isLoggedIn.collectAsState(initial = false)
+    val currentUser by authViewModel.currentUser.collectAsState(initial = null)
+
     NavHost(
         navController = navController,
         startDestination = startDestination
     ) {
+        // ========== HOME (SIN LOGIN) ==========
+        composable(Routes.Home.route) {
+            HomeScreen(
+                navController = navController,
+                isAuthenticated = isAuthenticated,
+                onProfileClick = {
+                    if (isAuthenticated) {
+                        // Si está logueado, ir a perfil
+                        navController.navigate(Routes.Profile.route)
+                    } else {
+                        // Si no, pedir login
+                        navController.navigate(Routes.Login.route)
+                    }
+                }
+            )
+        }
+
         // ========== AUTENTICACIÓN ==========
         composable(Routes.Login.route) {
             LoginScreen(
@@ -31,12 +60,8 @@ fun NavGraph(
                     navController.navigate(Routes.Register.route)
                 },
                 onLoginSuccess = { isAdmin ->
-                    val destination = if (isAdmin) {
-                        Routes.AdminHome.route
-                    } else {
-                        Routes.UserHome.route
-                    }
-                    navController.navigate(destination) {
+                    // Volver a Home después de login
+                    navController.navigate(Routes.Home.route) {
                         popUpTo(Routes.Login.route) { inclusive = true }
                     }
                 }
@@ -79,7 +104,11 @@ fun NavGraph(
             val productId = backStackEntry.arguments?.getInt("productId") ?: 0
             ProductDetailScreen(
                 productId = productId,
-                navController = navController
+                navController = navController,
+                isAuthenticated = isAuthenticated,
+                onLoginRequired = {
+                    navController.navigate(Routes.Login.route)
+                }
             )
         }
 

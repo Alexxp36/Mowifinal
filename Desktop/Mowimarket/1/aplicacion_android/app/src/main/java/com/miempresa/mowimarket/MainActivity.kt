@@ -51,20 +51,8 @@ fun MowiMarketApp() {
     val isLoggedIn by authViewModel.isLoggedIn.collectAsState(initial = false)
     val currentUser by authViewModel.currentUser.collectAsState(initial = null)
 
-    // Determinar pantalla inicial
-    val startDestination = remember(isLoggedIn, currentUser) {
-        if (isLoggedIn && currentUser != null) {
-            // Usuario logueado - redirigir según rol
-            if (currentUser!!.isAdmin || currentUser!!.isStaff) {
-                Routes.AdminHome.route
-            } else {
-                Routes.UserHome.route
-            }
-        } else {
-            // No logueado - ir a login
-            Routes.Login.route
-        }
-    }
+    // Siempre iniciar en Home (sin login requerido)
+    val startDestination = Routes.Home.route
 
     // Función de logout
     val handleLogout: () -> Unit = {

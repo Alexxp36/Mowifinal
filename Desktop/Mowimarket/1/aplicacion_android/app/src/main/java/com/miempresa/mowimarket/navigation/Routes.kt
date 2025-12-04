@@ -5,6 +5,9 @@ package com.miempresa.mowimarket.navigation
  */
 sealed class Routes(val route: String) {
 
+    // Pantalla principal (sin login)
+    object Home : Routes("home")
+
     // Autenticación
     object Login : Routes("login")
     object Register : Routes("register")
