@@ -32,7 +32,7 @@ object RetrofitClient {
      * Token JWT almacenado en memoria
      * En producción, usar DataStore o SharedPreferences encriptado
      */
-    var authToken: String? = null
+    private var authToken: String? = null
 
     /**
      * Interceptor para agregar token JWT a las requests
