@@ -1,5 +1,6 @@
 package com.miempresa.mowimarket.ui.screens.user
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -42,7 +43,7 @@ import com.miempresa.mowimarket.ui.viewmodel.ProductsUiState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(
     navController: NavController,
@@ -352,7 +353,6 @@ fun DrawerContent(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MowiCarousel() {
     val pagerState = rememberPagerState(pageCount = { 3 })
