@@ -27,8 +27,13 @@ def register_view(request):
     if serializer.is_valid():
         user = serializer.save()
 
+        # Generar tokens JWT automáticamente al registrarse
+        refresh = RefreshToken.for_user(user)
+
         return Response({
             'message': 'Usuario creado exitosamente',
+            'access': str(refresh.access_token),
+            'refresh': str(refresh),
             'user': {
                 'id': user.id,
                 'email': user.email,
