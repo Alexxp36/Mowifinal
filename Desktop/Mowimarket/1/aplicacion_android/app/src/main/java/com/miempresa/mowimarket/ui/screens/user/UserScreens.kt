@@ -138,38 +138,3 @@ fun MyOrdersScreen(navController: NavController) {
     }
 }
 
-@Composable
-fun OrderDetailScreen(orderId: Int, navController: NavController) {
-    Scaffold { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text("Detalle del Pedido $orderId", style = MaterialTheme.typography.headlineMedium)
-        }
-    }
-}
-
-@Composable
-fun ProfileScreen(navController: NavController, onLogout: () -> Unit) {
-    Scaffold { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text("Mi Perfil", style = MaterialTheme.typography.headlineMedium)
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = onLogout) {
-                Text("Cerrar Sesión")
-            }
-        }
-    }
-}
