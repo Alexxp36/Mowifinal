@@ -15,6 +15,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.miempresa.mowimarket.navigation.Routes
+import com.miempresa.mowimarket.ui.viewmodel.CartViewModel
 import com.miempresa.mowimarket.ui.viewmodel.ProductDetailUiState
 import com.miempresa.mowimarket.ui.viewmodel.ProductViewModel
 
@@ -25,7 +27,8 @@ fun ProductDetailScreen(
     navController: NavController,
     isAuthenticated: Boolean,
     onLoginRequired: () -> Unit,
-    viewModel: ProductViewModel = viewModel()
+    viewModel: ProductViewModel = viewModel(),
+    cartViewModel: CartViewModel = viewModel()
 ) {
     // Cargar producto al iniciar
     LaunchedEffect(productId) {
@@ -34,6 +37,8 @@ fun ProductDetailScreen(
 
     val productState by viewModel.productDetailState.collectAsState()
     var showLoginDialog by remember { mutableStateOf(false) }
+    var showAddedToCartDialog by remember { mutableStateOf(false) }
+    var quantity by remember { mutableStateOf(1) }
 
     Scaffold(
         topBar = {
@@ -178,11 +183,62 @@ fun ProductDetailScreen(
 
                         Spacer(modifier = Modifier.height(32.dp))
 
+                        // Selector de cantidad
+                        Text(
+                            text = "Cantidad",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            // Botón disminuir
+                            OutlinedButton(
+                                onClick = {
+                                    if (quantity > 1) quantity--
+                                },
+                                enabled = quantity > 1,
+                                modifier = Modifier.size(48.dp)
+                            ) {
+                                Icon(Icons.Default.Clear, contentDescription = "Disminuir")
+                            }
+
+                            Spacer(modifier = Modifier.width(16.dp))
+
+                            // Cantidad
+                            Text(
+                                text = quantity.toString(),
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.weight(1f)
+                            )
+
+                            Spacer(modifier = Modifier.width(16.dp))
+
+                            // Botón aumentar
+                            OutlinedButton(
+                                onClick = {
+                                    if (quantity < producto.stock) quantity++
+                                },
+                                enabled = quantity < producto.stock,
+                                modifier = Modifier.size(48.dp)
+                            ) {
+                                Icon(Icons.Default.Add, contentDescription = "Aumentar")
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
                         // Botón agregar al carrito
                         Button(
                             onClick = {
                                 if (isAuthenticated) {
-                                    // TODO: Agregar al carrito
+                                    cartViewModel.addToCart(producto, quantity)
+                                    showAddedToCartDialog = true
                                 } else {
                                     showLoginDialog = true
                                 }
@@ -190,7 +246,7 @@ fun ProductDetailScreen(
                             modifier = Modifier.fillMaxWidth(),
                             enabled = producto.stock > 0
                         ) {
-                            Icon(Icons.Default.Add, contentDescription = null)
+                            Icon(Icons.Default.ShoppingCart, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("Agregar al Carrito")
                         }
@@ -220,6 +276,36 @@ fun ProductDetailScreen(
             dismissButton = {
                 TextButton(onClick = { showLoginDialog = false }) {
                     Text("Cancelar")
+                }
+            }
+        )
+    }
+
+    // Dialog después de agregar al carrito
+    if (showAddedToCartDialog) {
+        AlertDialog(
+            onDismissRequest = { showAddedToCartDialog = false },
+            icon = { Icon(Icons.Default.CheckCircle, contentDescription = null) },
+            title = { Text("¡Producto Agregado!") },
+            text = { Text("$quantity ${if (quantity == 1) "producto agregado" else "productos agregados"} al carrito") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showAddedToCartDialog = false
+                        navController.navigate(Routes.Cart.route)
+                    }
+                ) {
+                    Text("Ir a Comprar")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showAddedToCartDialog = false
+                        quantity = 1 // Resetear cantidad
+                    }
+                ) {
+                    Text("Seguir Comprando")
                 }
             }
         )
