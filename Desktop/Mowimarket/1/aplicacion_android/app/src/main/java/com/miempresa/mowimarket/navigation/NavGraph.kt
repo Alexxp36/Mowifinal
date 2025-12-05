@@ -9,12 +9,12 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.miempresa.mowimarket.ui.screens.auth.AuthViewModelFactory
 import com.miempresa.mowimarket.ui.screens.auth.LoginScreen
 import com.miempresa.mowimarket.ui.screens.auth.RegisterScreen
 import com.miempresa.mowimarket.ui.screens.user.*
 import com.miempresa.mowimarket.ui.screens.admin.*
 import com.miempresa.mowimarket.ui.viewmodel.AuthViewModel
+import com.miempresa.mowimarket.ui.viewmodel.AuthViewModelFactory
 import com.miempresa.mowimarket.ui.viewmodel.CartViewModel
 
 /**
