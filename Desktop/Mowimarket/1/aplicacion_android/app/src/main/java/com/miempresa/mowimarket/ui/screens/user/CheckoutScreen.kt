@@ -32,6 +32,14 @@ fun CheckoutScreen(
     var notasAdicionales by remember { mutableStateOf("") }
     var metodoPago by remember { mutableStateOf("tarjeta") }
     var showSuccessDialog by remember { mutableStateOf(false) }
+    var showCardDialog by remember { mutableStateOf(false) }
+
+    // Datos de tarjeta
+    var cardNumber by remember { mutableStateOf("") }
+    var cardHolder by remember { mutableStateOf("") }
+    var expiryDate by remember { mutableStateOf("") }
+    var cvv by remember { mutableStateOf("") }
+    var cardDataSaved by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -191,11 +199,28 @@ fun CheckoutScreen(
                         ) {
                             RadioButton(
                                 selected = metodoPago == "tarjeta",
-                                onClick = { metodoPago = "tarjeta" }
+                                onClick = {
+                                    metodoPago = "tarjeta"
+                                    showCardDialog = true
+                                }
                             )
                             Icon(Icons.Default.AccountBox, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Tarjeta de Crédito/Débito")
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text("Tarjeta de Crédito/Débito")
+                                if (cardDataSaved && metodoPago == "tarjeta") {
+                                    Text(
+                                        text = "•••• •••• •••• ${cardNumber.takeLast(4)}",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                            if (cardDataSaved && metodoPago == "tarjeta") {
+                                IconButton(onClick = { showCardDialog = true }) {
+                                    Icon(Icons.Default.Edit, contentDescription = "Editar", tint = MaterialTheme.colorScheme.primary)
+                                }
+                            }
                         }
 
                         Row(
@@ -237,8 +262,12 @@ fun CheckoutScreen(
                 ) {
                     Button(
                         onClick = {
-                            // Aquí iría la lógica para procesar el pedido
-                            showSuccessDialog = true
+                            // Validar que si es tarjeta, tenga los datos guardados
+                            if (metodoPago == "tarjeta" && !cardDataSaved) {
+                                showCardDialog = true
+                            } else {
+                                showSuccessDialog = true
+                            }
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -252,6 +281,111 @@ fun CheckoutScreen(
                 }
             }
         }
+    }
+
+    // Dialog de tarjeta
+    if (showCardDialog) {
+        AlertDialog(
+            onDismissRequest = { showCardDialog = false },
+            title = {
+                Text(
+                    "Datos de Tarjeta",
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedTextField(
+                        value = cardNumber,
+                        onValueChange = {
+                            if (it.length <= 16 && it.all { char -> char.isDigit() }) {
+                                cardNumber = it
+                            }
+                        },
+                        label = { Text("Número de Tarjeta") },
+                        placeholder = { Text("1234 5678 9012 3456") },
+                        leadingIcon = { Icon(Icons.Default.AccountBox, contentDescription = null) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+
+                    OutlinedTextField(
+                        value = cardHolder,
+                        onValueChange = { cardHolder = it.uppercase() },
+                        label = { Text("Titular de la Tarjeta") },
+                        placeholder = { Text("JUAN PEREZ") },
+                        leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = expiryDate,
+                            onValueChange = {
+                                if (it.length <= 5) {
+                                    expiryDate = it
+                                }
+                            },
+                            label = { Text("MM/AA") },
+                            placeholder = { Text("12/25") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier.weight(1f),
+                            singleLine = true
+                        )
+
+                        OutlinedTextField(
+                            value = cvv,
+                            onValueChange = {
+                                if (it.length <= 3 && it.all { char -> char.isDigit() }) {
+                                    cvv = it
+                                }
+                            },
+                            label = { Text("CVV") },
+                            placeholder = { Text("123") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier.weight(1f),
+                            singleLine = true
+                        )
+                    }
+
+                    Text(
+                        text = "🔒 Tus datos están seguros y encriptados",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (cardNumber.length == 16 && cardHolder.isNotBlank() &&
+                            expiryDate.length >= 4 && cvv.length == 3) {
+                            cardDataSaved = true
+                            showCardDialog = false
+                        }
+                    },
+                    enabled = cardNumber.length == 16 && cardHolder.isNotBlank() &&
+                              expiryDate.length >= 4 && cvv.length == 3
+                ) {
+                    Text("Guardar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCardDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
     }
 
     // Dialog de éxito
