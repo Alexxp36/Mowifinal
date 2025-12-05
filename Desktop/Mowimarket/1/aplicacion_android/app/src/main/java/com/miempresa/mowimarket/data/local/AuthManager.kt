@@ -44,15 +44,23 @@ class AuthManager(context: Context) {
      * Guardar datos de autenticación
      */
     suspend fun saveAuth(authResponse: AuthResponse) {
-        // Guardar en DataStore
-        userPreferences.saveAuthData(
-            accessToken = authResponse.accessToken,
-            refreshToken = authResponse.refreshToken,
-            user = authResponse.user
-        )
+        // Verificar que los tokens no sean null
+        val accessToken = authResponse.accessToken
+        val refreshToken = authResponse.refreshToken
 
-        // Configurar token en Retrofit
-        RetrofitClient.setAuthToken(authResponse.accessToken)
+        if (accessToken != null && refreshToken != null) {
+            // Guardar en DataStore
+            userPreferences.saveAuthData(
+                accessToken = accessToken,
+                refreshToken = refreshToken,
+                user = authResponse.user
+            )
+
+            // Configurar token en Retrofit
+            RetrofitClient.setAuthToken(accessToken)
+        } else {
+            throw IllegalStateException("El servidor no devolvió tokens de autenticación válidos")
+        }
     }
 
     /**

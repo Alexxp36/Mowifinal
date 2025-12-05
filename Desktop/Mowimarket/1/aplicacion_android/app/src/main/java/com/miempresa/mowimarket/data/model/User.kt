@@ -62,10 +62,10 @@ data class RegisterRequest(
  */
 data class AuthResponse(
     @SerializedName("access")
-    val accessToken: String,
+    val accessToken: String? = null,
 
     @SerializedName("refresh")
-    val refreshToken: String,
+    val refreshToken: String? = null,
 
     @SerializedName("user")
     val user: User

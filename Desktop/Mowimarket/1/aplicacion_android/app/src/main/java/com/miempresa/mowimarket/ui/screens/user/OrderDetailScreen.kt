@@ -34,56 +34,149 @@ fun OrderDetailScreen(
     navController: NavController
 ) {
     // Datos de ejemplo (en una implementación real vendrían del ViewModel)
-    val pedido = remember {
-        Pedido(
-            id = orderId,
-            usuarioId = 1,
-            total = 299.98,
-            estado = EstadoPedido.EN_PROCESO,
-            metodoPago = MetodoPago.TARJETA,
-            detalles = listOf(
-                DetallePedido(
-                    id = 1,
-                    pedidoId = orderId,
-                    producto = Producto(
+    // Creamos diferentes pedidos según el orderId para mostrar contenido único
+    val pedido = remember(orderId) {
+        when (orderId) {
+            1 -> Pedido(
+                id = 1,
+                usuarioId = 1,
+                total = 299.98,
+                estado = EstadoPedido.ENTREGADO,
+                metodoPago = MetodoPago.TARJETA,
+                detalles = listOf(
+                    DetallePedido(
                         id = 1,
-                        nombre = "Smartphone Galaxy Pro X",
-                        descripcion = "Smartphone de última generación",
-                        categoria = null,
-                        precio = 899.99,
-                        stock = 45,
-                        vendidos = 127,
-                        imagen = "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9",
-                        activo = true
-                    ),
-                    productoId = 1,
-                    cantidad = 2,
-                    precioUnitario = 899.99,
-                    subtotal = 1799.98
+                        pedidoId = 1,
+                        producto = Producto(
+                            id = 1,
+                            nombre = "Laptop HP Pavilion",
+                            descripcion = "Laptop para trabajo y estudio",
+                            categoria = null,
+                            precio = 149.99,
+                            stock = 20,
+                            vendidos = 85,
+                            imagen = "https://images.unsplash.com/photo-1496181133206-80ce9b88a853",
+                            activo = true
+                        ),
+                        productoId = 1,
+                        cantidad = 2,
+                        precioUnitario = 149.99,
+                        subtotal = 299.98
+                    )
                 ),
-                DetallePedido(
-                    id = 2,
-                    pedidoId = orderId,
-                    producto = Producto(
-                        id = 3,
-                        nombre = "Auriculares SoundMax Pro",
-                        descripcion = "Auriculares con cancelación de ruido",
-                        categoria = null,
-                        precio = 249.99,
-                        stock = 78,
-                        vendidos = 234,
-                        imagen = "https://images.unsplash.com/photo-1505740420928-5e560c06d30e",
-                        activo = true
+                fechaPedido = "2024-11-15T10:30:00",
+                fechaActualizacion = "2024-11-18T14:20:00"
+            )
+            2 -> Pedido(
+                id = 2,
+                usuarioId = 1,
+                total = 450.50,
+                estado = EstadoPedido.EN_PROCESO,
+                metodoPago = MetodoPago.YAPE,
+                detalles = listOf(
+                    DetallePedido(
+                        id = 2,
+                        pedidoId = 2,
+                        producto = Producto(
+                            id = 2,
+                            nombre = "Mouse Inalámbrico Logitech",
+                            descripcion = "Mouse ergonómico",
+                            categoria = null,
+                            precio = 200.25,
+                            stock = 50,
+                            vendidos = 120,
+                            imagen = "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46",
+                            activo = true
+                        ),
+                        productoId = 2,
+                        cantidad = 1,
+                        precioUnitario = 200.25,
+                        subtotal = 200.25
                     ),
-                    productoId = 3,
-                    cantidad = 1,
-                    precioUnitario = 249.99,
-                    subtotal = 249.99
-                )
-            ),
-            fechaPedido = "2024-11-20T15:45:00",
-            fechaActualizacion = "2024-11-21T09:00:00"
-        )
+                    DetallePedido(
+                        id = 3,
+                        pedidoId = 2,
+                        producto = Producto(
+                            id = 3,
+                            nombre = "Teclado Mecánico RGB",
+                            descripcion = "Teclado gaming",
+                            categoria = null,
+                            precio = 250.25,
+                            stock = 30,
+                            vendidos = 95,
+                            imagen = "https://images.unsplash.com/photo-1587829741301-dc798b83add3",
+                            activo = true
+                        ),
+                        productoId = 3,
+                        cantidad = 1,
+                        precioUnitario = 250.25,
+                        subtotal = 250.25
+                    )
+                ),
+                fechaPedido = "2024-11-20T15:45:00",
+                fechaActualizacion = "2024-11-21T09:00:00"
+            )
+            3 -> Pedido(
+                id = 3,
+                usuarioId = 1,
+                total = 125.99,
+                estado = EstadoPedido.PENDIENTE,
+                metodoPago = MetodoPago.TRANSFERENCIA,
+                detalles = listOf(
+                    DetallePedido(
+                        id = 4,
+                        pedidoId = 3,
+                        producto = Producto(
+                            id = 4,
+                            nombre = "Cámara Web HD",
+                            descripcion = "Webcam 1080p",
+                            categoria = null,
+                            precio = 125.99,
+                            stock = 40,
+                            vendidos = 150,
+                            imagen = "https://images.unsplash.com/photo-1587826080692-f439cd0b70da",
+                            activo = true
+                        ),
+                        productoId = 4,
+                        cantidad = 1,
+                        precioUnitario = 125.99,
+                        subtotal = 125.99
+                    )
+                ),
+                fechaPedido = "2024-11-25T08:15:00",
+                fechaActualizacion = null
+            )
+            else -> Pedido(
+                id = orderId,
+                usuarioId = 1,
+                total = 99.99,
+                estado = EstadoPedido.PENDIENTE,
+                metodoPago = MetodoPago.TARJETA,
+                detalles = listOf(
+                    DetallePedido(
+                        id = orderId,
+                        pedidoId = orderId,
+                        producto = Producto(
+                            id = orderId,
+                            nombre = "Producto Ejemplo",
+                            descripcion = "Descripción del producto",
+                            categoria = null,
+                            precio = 99.99,
+                            stock = 10,
+                            vendidos = 50,
+                            imagen = "https://images.unsplash.com/photo-1523275335684-37898b6baf30",
+                            activo = true
+                        ),
+                        productoId = orderId,
+                        cantidad = 1,
+                        precioUnitario = 99.99,
+                        subtotal = 99.99
+                    )
+                ),
+                fechaPedido = "2024-11-01T12:00:00",
+                fechaActualizacion = null
+            )
+        }
     }
 
     Scaffold(

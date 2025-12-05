@@ -409,8 +409,6 @@ fun CheckoutScreen(
                     Text("Total: ${cartViewModel.getTotalFormateado()}")
                     Spacer(modifier = Modifier.height(4.dp))
                     Text("Método de pago: ${metodoPago.uppercase()}")
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text("Recibirás una confirmación por correo.")
                 }
             },
             confirmButton = {
