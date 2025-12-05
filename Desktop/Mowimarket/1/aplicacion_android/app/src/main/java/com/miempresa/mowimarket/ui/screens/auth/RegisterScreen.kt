@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.miempresa.mowimarket.ui.viewmodel.AuthUiState
 import com.miempresa.mowimarket.ui.viewmodel.AuthViewModel
+import com.miempresa.mowimarket.ui.viewmodel.AuthViewModelFactory
 
 /**
  * Pantalla de Registro

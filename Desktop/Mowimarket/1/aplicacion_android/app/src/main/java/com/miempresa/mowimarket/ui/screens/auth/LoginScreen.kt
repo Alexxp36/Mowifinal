@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.miempresa.mowimarket.ui.viewmodel.AuthUiState
 import com.miempresa.mowimarket.ui.viewmodel.AuthViewModel
+import com.miempresa.mowimarket.ui.viewmodel.AuthViewModelFactory
 
 /**
  * Pantalla de Login
@@ -192,18 +193,5 @@ fun LoginScreen(
                 }
             }
         }
-    }
-}
-
-/**
- * Factory para crear el ViewModel con Context
- */
-class AuthViewModelFactory(private val context: android.content.Context) : androidx.lifecycle.ViewModelProvider.Factory {
-    override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(AuthViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return AuthViewModel(context) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
