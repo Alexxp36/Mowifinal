@@ -15,6 +15,7 @@ import com.miempresa.mowimarket.ui.screens.auth.RegisterScreen
 import com.miempresa.mowimarket.ui.screens.user.*
 import com.miempresa.mowimarket.ui.screens.admin.*
 import com.miempresa.mowimarket.ui.viewmodel.AuthViewModel
+import com.miempresa.mowimarket.ui.viewmodel.CartViewModel
 
 /**
  * Grafo de navegación principal
@@ -29,6 +30,9 @@ fun NavGraph(
         factory = AuthViewModelFactory(androidx.compose.ui.platform.LocalContext.current)
     )
 
+    // Crear una única instancia de CartViewModel para compartir entre pantallas
+    val cartViewModel: CartViewModel = viewModel()
+
     val isAuthenticated by authViewModel.isLoggedIn.collectAsState(initial = false)
     val currentUser by authViewModel.currentUser.collectAsState(initial = null)
 
@@ -41,6 +45,7 @@ fun NavGraph(
             HomeScreen(
                 navController = navController,
                 isAuthenticated = isAuthenticated,
+                cartViewModel = cartViewModel,
                 onProfileClick = {
                     if (isAuthenticated) {
                         // Si está logueado, ir a perfil
@@ -106,6 +111,7 @@ fun NavGraph(
                 productId = productId,
                 navController = navController,
                 isAuthenticated = isAuthenticated,
+                cartViewModel = cartViewModel,
                 onLoginRequired = {
                     navController.navigate(Routes.Login.route)
                 }
@@ -114,13 +120,15 @@ fun NavGraph(
 
         composable(Routes.Cart.route) {
             CartScreen(
-                navController = navController
+                navController = navController,
+                cartViewModel = cartViewModel
             )
         }
 
         composable(Routes.Checkout.route) {
             CheckoutScreen(
-                navController = navController
+                navController = navController,
+                cartViewModel = cartViewModel
             )
         }
 
