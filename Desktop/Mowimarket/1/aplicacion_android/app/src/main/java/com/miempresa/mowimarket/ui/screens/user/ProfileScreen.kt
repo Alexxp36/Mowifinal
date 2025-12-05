@@ -16,16 +16,20 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.miempresa.mowimarket.data.model.EstadoPedido
 import com.miempresa.mowimarket.data.model.Pedido
 import com.miempresa.mowimarket.navigation.Routes
 import com.miempresa.mowimarket.ui.theme.OrangeAccent
 import com.miempresa.mowimarket.ui.theme.OrangePrimary
+import com.miempresa.mowimarket.ui.viewmodel.AuthViewModel
+import com.miempresa.mowimarket.ui.viewmodel.AuthViewModelFactory
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -33,12 +37,17 @@ import java.util.*
 @Composable
 fun ProfileScreen(
     navController: NavController,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    authViewModel: AuthViewModel = viewModel(
+        factory = AuthViewModelFactory(LocalContext.current)
+    )
 ) {
-    // Datos de ejemplo del usuario (en una implementación real vendrían del ViewModel)
-    val userName = "Juan Pérez"
-    val userEmail = "cliente@mowi.com"
-    val memberSince = "Enero 2024"
+    // Obtener datos reales del usuario logueado
+    val currentUser by authViewModel.currentUser.collectAsState(initial = null)
+
+    val userName = currentUser?.name ?: "Usuario"
+    val userEmail = currentUser?.email ?: "email@ejemplo.com"
+    val memberSince = currentUser?.dateJoined?.let { formatMemberSince(it) } ?: "2024"
 
     // Pedidos de ejemplo (en una implementación real vendrían del ViewModel)
     val pedidos = remember {
@@ -416,5 +425,16 @@ private fun formatearFecha(fechaISO: String): String {
         date?.let { outputFormat.format(it) } ?: fechaISO
     } catch (e: Exception) {
         fechaISO
+    }
+}
+
+private fun formatMemberSince(fechaISO: String): String {
+    return try {
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+        val outputFormat = SimpleDateFormat("MMMM yyyy", Locale("es", "ES"))
+        val date = inputFormat.parse(fechaISO)
+        date?.let { outputFormat.format(it).replaceFirstChar { it.uppercase() } } ?: "2024"
+    } catch (e: Exception) {
+        "2024"
     }
 }

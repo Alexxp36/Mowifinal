@@ -79,8 +79,9 @@ fun NavGraph(
                     navController.popBackStack()
                 },
                 onRegisterSuccess = {
-                    navController.navigate(Routes.UserHome.route) {
-                        popUpTo(Routes.Login.route) { inclusive = true }
+                    // Ir directo a Home después del registro exitoso
+                    navController.navigate(Routes.Home.route) {
+                        popUpTo(Routes.Register.route) { inclusive = true }
                     }
                 }
             )
