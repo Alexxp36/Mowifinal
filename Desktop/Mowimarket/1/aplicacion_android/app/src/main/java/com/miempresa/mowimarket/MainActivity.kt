@@ -14,9 +14,9 @@ import androidx.navigation.compose.rememberNavController
 import com.miempresa.mowimarket.data.local.AuthManager
 import com.miempresa.mowimarket.navigation.NavGraph
 import com.miempresa.mowimarket.navigation.Routes
-import com.miempresa.mowimarket.ui.screens.auth.AuthViewModelFactory
 import com.miempresa.mowimarket.ui.theme.MowiMarketTheme
 import com.miempresa.mowimarket.ui.viewmodel.AuthViewModel
+import com.miempresa.mowimarket.ui.viewmodel.AuthViewModelFactory
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
