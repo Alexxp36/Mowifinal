@@ -49,40 +49,10 @@ fun ProfileScreen(
     val userEmail = currentUser?.email ?: "email@ejemplo.com"
     val memberSince = currentUser?.dateJoined?.let { formatMemberSince(it) } ?: "2024"
 
-    // Pedidos de ejemplo (en una implementación real vendrían del ViewModel)
+    // Pedidos del usuario (en una implementación real vendrían del backend)
+    // Por ahora, lista vacía para usuarios nuevos
     val pedidos = remember {
-        listOf(
-            Pedido(
-                id = 1,
-                usuarioId = 1,
-                total = 299.98,
-                estado = EstadoPedido.ENTREGADO,
-                metodoPago = com.miempresa.mowimarket.data.model.MetodoPago.TARJETA,
-                detalles = emptyList(),
-                fechaPedido = "2024-11-15T10:30:00",
-                fechaActualizacion = "2024-11-18T14:20:00"
-            ),
-            Pedido(
-                id = 2,
-                usuarioId = 1,
-                total = 450.50,
-                estado = EstadoPedido.EN_PROCESO,
-                metodoPago = com.miempresa.mowimarket.data.model.MetodoPago.YAPE,
-                detalles = emptyList(),
-                fechaPedido = "2024-11-20T15:45:00",
-                fechaActualizacion = "2024-11-21T09:00:00"
-            ),
-            Pedido(
-                id = 3,
-                usuarioId = 1,
-                total = 125.99,
-                estado = EstadoPedido.PENDIENTE,
-                metodoPago = com.miempresa.mowimarket.data.model.MetodoPago.TRANSFERENCIA,
-                detalles = emptyList(),
-                fechaPedido = "2024-11-25T08:15:00",
-                fechaActualizacion = null
-            )
-        )
+        emptyList<Pedido>()
     }
 
     var showLogoutDialog by remember { mutableStateOf(false) }
