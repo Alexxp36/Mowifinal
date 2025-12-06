@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.miempresa.mowimarket.data.local.LocalOrderManager
 import com.miempresa.mowimarket.data.model.EstadoPedido
 import com.miempresa.mowimarket.data.model.Pedido
 import com.miempresa.mowimarket.navigation.Routes
@@ -30,6 +31,7 @@ import com.miempresa.mowimarket.ui.theme.OrangeAccent
 import com.miempresa.mowimarket.ui.theme.OrangePrimary
 import com.miempresa.mowimarket.ui.viewmodel.AuthViewModel
 import com.miempresa.mowimarket.ui.viewmodel.AuthViewModelFactory
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -42,6 +44,10 @@ fun ProfileScreen(
         factory = AuthViewModelFactory(LocalContext.current)
     )
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val localOrderManager = remember { LocalOrderManager(context) }
+
     // Obtener datos reales del usuario logueado
     val currentUser by authViewModel.currentUser.collectAsState(initial = null)
 
@@ -49,10 +55,12 @@ fun ProfileScreen(
     val userEmail = currentUser?.email ?: "email@ejemplo.com"
     val memberSince = currentUser?.dateJoined?.let { formatMemberSince(it) } ?: "2024"
 
-    // Pedidos del usuario (en una implementación real vendrían del backend)
-    // Por ahora, lista vacía para usuarios nuevos
-    val pedidos = remember {
-        emptyList<Pedido>()
+    // Pedidos del usuario guardados localmente
+    var pedidos by remember { mutableStateOf<List<Pedido>>(emptyList()) }
+
+    // Cargar pedidos al iniciar la pantalla
+    LaunchedEffect(Unit) {
+        pedidos = localOrderManager.getOrders()
     }
 
     var showLogoutDialog by remember { mutableStateOf(false) }
@@ -260,7 +268,11 @@ fun ProfileScreen(
                 Button(
                     onClick = {
                         showLogoutDialog = false
-                        onLogout()
+                        // Limpiar pedidos locales al cerrar sesión
+                        scope.launch {
+                            localOrderManager.clearOrders()
+                            onLogout()
+                        }
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.error

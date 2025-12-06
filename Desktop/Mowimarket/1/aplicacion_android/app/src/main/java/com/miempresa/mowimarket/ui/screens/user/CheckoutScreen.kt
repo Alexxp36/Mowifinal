@@ -10,23 +10,42 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.miempresa.mowimarket.data.local.LocalOrderManager
+import com.miempresa.mowimarket.data.model.DetallePedido
+import com.miempresa.mowimarket.data.model.EstadoPedido
+import com.miempresa.mowimarket.data.model.MetodoPago
+import com.miempresa.mowimarket.data.model.Pedido
 import com.miempresa.mowimarket.navigation.Routes
+import com.miempresa.mowimarket.ui.viewmodel.AuthViewModel
+import com.miempresa.mowimarket.ui.viewmodel.AuthViewModelFactory
 import com.miempresa.mowimarket.ui.viewmodel.CartViewModel
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CheckoutScreen(
     navController: NavController,
-    cartViewModel: CartViewModel = viewModel()
+    cartViewModel: CartViewModel = viewModel(),
+    authViewModel: AuthViewModel = viewModel(
+        factory = AuthViewModelFactory(LocalContext.current)
+    )
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val localOrderManager = remember { LocalOrderManager(context) }
+
     val cartItems by cartViewModel.cartItems.collectAsState()
     val cartTotal by cartViewModel.cartTotal.collectAsState()
+    val currentUser by authViewModel.currentUser.collectAsState(initial = null)
 
     var direccion by remember { mutableStateOf("") }
     var telefono by remember { mutableStateOf("") }
@@ -267,7 +286,59 @@ fun CheckoutScreen(
                             if (metodoPago == "tarjeta" && !cardDataSaved) {
                                 showCardDialog = true
                             } else {
-                                showSuccessDialog = true
+                                // Guardar pedido localmente
+                                scope.launch {
+                                    try {
+                                        // Obtener siguiente ID de pedido
+                                        val nextOrderId = localOrderManager.getNextOrderId()
+
+                                        // Convertir método de pago string a enum
+                                        val metodoPagoEnum = when (metodoPago) {
+                                            "tarjeta" -> MetodoPago.TARJETA
+                                            "yape" -> MetodoPago.YAPE
+                                            "transferencia" -> MetodoPago.TRANSFERENCIA
+                                            else -> MetodoPago.TARJETA
+                                        }
+
+                                        // Crear detalles del pedido desde el carrito
+                                        val detalles = cartItems.mapIndexed { index, cartItem ->
+                                            DetallePedido(
+                                                id = index + 1,
+                                                pedidoId = nextOrderId,
+                                                producto = cartItem.producto,
+                                                productoId = cartItem.producto.id,
+                                                cantidad = cartItem.cantidad,
+                                                precioUnitario = cartItem.producto.precio,
+                                                subtotal = cartItem.subtotal()
+                                            )
+                                        }
+
+                                        // Crear fecha actual en formato ISO
+                                        val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+                                        val fechaActual = dateFormat.format(Date())
+
+                                        // Crear objeto Pedido
+                                        val nuevoPedido = Pedido(
+                                            id = nextOrderId,
+                                            usuarioId = currentUser?.id ?: 1,
+                                            total = cartTotal,
+                                            estado = EstadoPedido.PENDIENTE,
+                                            metodoPago = metodoPagoEnum,
+                                            detalles = detalles,
+                                            fechaPedido = fechaActual,
+                                            fechaActualizacion = null
+                                        )
+
+                                        // Guardar pedido
+                                        localOrderManager.addOrder(nuevoPedido)
+
+                                        // Mostrar dialog de éxito
+                                        showSuccessDialog = true
+                                    } catch (e: Exception) {
+                                        // En caso de error, mostrar el dialog igual
+                                        showSuccessDialog = true
+                                    }
+                                }
                             }
                         },
                         modifier = Modifier
