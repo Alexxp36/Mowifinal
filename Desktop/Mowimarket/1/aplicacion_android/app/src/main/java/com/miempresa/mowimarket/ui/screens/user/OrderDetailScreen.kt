@@ -13,11 +13,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.miempresa.mowimarket.data.local.LocalOrderManager
 import com.miempresa.mowimarket.data.model.DetallePedido
 import com.miempresa.mowimarket.data.model.EstadoPedido
 import com.miempresa.mowimarket.data.model.MetodoPago
@@ -33,151 +35,54 @@ fun OrderDetailScreen(
     orderId: Int,
     navController: NavController
 ) {
-    // Datos de ejemplo (en una implementación real vendrían del ViewModel)
-    // Creamos diferentes pedidos según el orderId para mostrar contenido único
-    val pedido = remember(orderId) {
-        when (orderId) {
-            1 -> Pedido(
-                id = 1,
-                usuarioId = 1,
-                total = 299.98,
-                estado = EstadoPedido.ENTREGADO,
-                metodoPago = MetodoPago.TARJETA,
-                detalles = listOf(
-                    DetallePedido(
-                        id = 1,
-                        pedidoId = 1,
-                        producto = Producto(
-                            id = 1,
-                            nombre = "Laptop HP Pavilion",
-                            descripcion = "Laptop para trabajo y estudio",
-                            categoria = null,
-                            precio = 149.99,
-                            stock = 20,
-                            vendidos = 85,
-                            imagen = "https://images.unsplash.com/photo-1496181133206-80ce9b88a853",
-                            activo = true
-                        ),
-                        productoId = 1,
-                        cantidad = 2,
-                        precioUnitario = 149.99,
-                        subtotal = 299.98
-                    )
-                ),
-                fechaPedido = "2024-11-15T10:30:00",
-                fechaActualizacion = "2024-11-18T14:20:00"
-            )
-            2 -> Pedido(
-                id = 2,
-                usuarioId = 1,
-                total = 450.50,
-                estado = EstadoPedido.EN_PROCESO,
-                metodoPago = MetodoPago.YAPE,
-                detalles = listOf(
-                    DetallePedido(
-                        id = 2,
-                        pedidoId = 2,
-                        producto = Producto(
-                            id = 2,
-                            nombre = "Mouse Inalámbrico Logitech",
-                            descripcion = "Mouse ergonómico",
-                            categoria = null,
-                            precio = 200.25,
-                            stock = 50,
-                            vendidos = 120,
-                            imagen = "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46",
-                            activo = true
-                        ),
-                        productoId = 2,
-                        cantidad = 1,
-                        precioUnitario = 200.25,
-                        subtotal = 200.25
-                    ),
-                    DetallePedido(
-                        id = 3,
-                        pedidoId = 2,
-                        producto = Producto(
-                            id = 3,
-                            nombre = "Teclado Mecánico RGB",
-                            descripcion = "Teclado gaming",
-                            categoria = null,
-                            precio = 250.25,
-                            stock = 30,
-                            vendidos = 95,
-                            imagen = "https://images.unsplash.com/photo-1587829741301-dc798b83add3",
-                            activo = true
-                        ),
-                        productoId = 3,
-                        cantidad = 1,
-                        precioUnitario = 250.25,
-                        subtotal = 250.25
-                    )
-                ),
-                fechaPedido = "2024-11-20T15:45:00",
-                fechaActualizacion = "2024-11-21T09:00:00"
-            )
-            3 -> Pedido(
-                id = 3,
-                usuarioId = 1,
-                total = 125.99,
-                estado = EstadoPedido.PENDIENTE,
-                metodoPago = MetodoPago.TRANSFERENCIA,
-                detalles = listOf(
-                    DetallePedido(
-                        id = 4,
-                        pedidoId = 3,
-                        producto = Producto(
-                            id = 4,
-                            nombre = "Cámara Web HD",
-                            descripcion = "Webcam 1080p",
-                            categoria = null,
-                            precio = 125.99,
-                            stock = 40,
-                            vendidos = 150,
-                            imagen = "https://images.unsplash.com/photo-1587826080692-f439cd0b70da",
-                            activo = true
-                        ),
-                        productoId = 4,
-                        cantidad = 1,
-                        precioUnitario = 125.99,
-                        subtotal = 125.99
-                    )
-                ),
-                fechaPedido = "2024-11-25T08:15:00",
-                fechaActualizacion = null
-            )
-            else -> Pedido(
-                id = orderId,
-                usuarioId = 1,
-                total = 99.99,
-                estado = EstadoPedido.PENDIENTE,
-                metodoPago = MetodoPago.TARJETA,
-                detalles = listOf(
-                    DetallePedido(
-                        id = orderId,
-                        pedidoId = orderId,
-                        producto = Producto(
-                            id = orderId,
-                            nombre = "Producto Ejemplo",
-                            descripcion = "Descripción del producto",
-                            categoria = null,
-                            precio = 99.99,
-                            stock = 10,
-                            vendidos = 50,
-                            imagen = "https://images.unsplash.com/photo-1523275335684-37898b6baf30",
-                            activo = true
-                        ),
-                        productoId = orderId,
-                        cantidad = 1,
-                        precioUnitario = 99.99,
-                        subtotal = 99.99
-                    )
-                ),
-                fechaPedido = "2024-11-01T12:00:00",
-                fechaActualizacion = null
-            )
-        }
+    val context = LocalContext.current
+    val localOrderManager = remember { LocalOrderManager(context) }
+
+    // Cargar el pedido real desde el almacenamiento local
+    var pedido by remember { mutableStateOf<Pedido?>(null) }
+
+    LaunchedEffect(orderId) {
+        val allOrders = localOrderManager.getOrders()
+        pedido = allOrders.find { it.id == orderId }
     }
+
+    // Si no se encuentra el pedido, mostrar mensaje
+    if (pedido == null) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("Pedido #${orderId}", fontWeight = FontWeight.Bold) },
+                    navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        titleContentColor = Color.White,
+                        navigationIconContentColor = Color.White
+                    )
+                )
+            }
+        ) { padding ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    CircularProgressIndicator()
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("Cargando pedidoReal...")
+                }
+            }
+        }
+        return
+    }
+
+    // Mostrar detalles del pedido real
+    val pedidoReal = pedido!! // Safe porque ya verificamos que no es null arriba
 
     Scaffold(
         topBar = {
@@ -226,7 +131,7 @@ fun OrderDetailScreen(
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold
                             )
-                            EstadoBadge(estado = pedido.estado)
+                            EstadoBadge(estado = pedidoReal.estado)
                         }
 
                         Spacer(modifier = Modifier.height(12.dp))
@@ -242,7 +147,7 @@ fun OrderDetailScreen(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = formatearFechaDetalle(pedido.fechaPedido),
+                                text = formatearFechaDetalle(pedidoReal.fechaPedido),
                                 fontSize = 14.sp,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
@@ -273,7 +178,7 @@ fun OrderDetailScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                when (pedido.metodoPago) {
+                                when (pedidoReal.metodoPago) {
                                     MetodoPago.TARJETA -> Icons.Default.AccountBox
                                     MetodoPago.YAPE -> Icons.Default.Phone
                                     MetodoPago.TRANSFERENCIA -> Icons.Default.AccountBalance
@@ -283,7 +188,7 @@ fun OrderDetailScreen(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = when (pedido.metodoPago) {
+                                text = when (pedidoReal.metodoPago) {
                                     MetodoPago.TARJETA -> "Tarjeta de Crédito/Débito"
                                     MetodoPago.YAPE -> "Yape"
                                     MetodoPago.TRANSFERENCIA -> "Transferencia Bancaria"
@@ -298,14 +203,14 @@ fun OrderDetailScreen(
             // Productos del pedido
             item {
                 Text(
-                    text = "Productos (${pedido.detalles.size})",
+                    text = "Productos (${pedidoReal.detalles.size})",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
             }
 
-            items(pedido.detalles) { detalle ->
+            items(pedidoReal.detalles) { detalle ->
                 DetalleProductoCard(detalle = detalle)
             }
 
@@ -330,7 +235,7 @@ fun OrderDetailScreen(
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        pedido.detalles.forEach { detalle ->
+                        pedidoReal.detalles.forEach { detalle ->
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -367,7 +272,7 @@ fun OrderDetailScreen(
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = pedido.totalFormateado(),
+                                text = pedidoReal.totalFormateado(),
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.ExtraBold,
                                 color = OrangePrimary
